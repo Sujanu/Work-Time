@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Time Tacker</string>
+    <string name="title_activity_helper">Helper</string>
+    <string name="title_activity_daily">Daily</string>
+</resources>
