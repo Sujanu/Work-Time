@@ -108,7 +108,7 @@ fun Time(db: WorkingHour) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("TIME COUNTER") },
+                title = { Text("WORK COUNTER") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF3F51B5),
                     titleContentColor = Color.White
