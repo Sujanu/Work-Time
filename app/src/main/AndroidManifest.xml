@@ -12,6 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TimeTacker">
         <activity
+            android:name=".activity.ui.theme.Month"
+            android:exported="false"
+            android:label="@string/title_activity_month"
+            android:theme="@style/Theme.TimeTacker" />
+        <activity
+            android:name=".activity.SplashScreen"
+            android:exported="true"
+            android:label="Time Tracker"
+            android:theme="@style/Theme.TimeTacker">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".activity.Daily"
             android:exported="false"
             android:label="@string/title_activity_daily"
@@ -25,13 +41,7 @@
             android:name=".activity.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.TimeTacker">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:theme="@style/Theme.TimeTacker" />
     </application>
 
 </manifest>

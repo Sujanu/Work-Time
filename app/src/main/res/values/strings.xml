@@ -2,4 +2,6 @@
     <string name="app_name">Time Tacker</string>
     <string name="title_activity_helper">Helper</string>
     <string name="title_activity_daily">Daily</string>
+    <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="title_activity_month">Month</string>
 </resources>

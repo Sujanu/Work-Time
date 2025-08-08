@@ -49,6 +49,7 @@ import np.com.softwel.timetacker.ui.theme.TimeTackerTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
+import np.com.softwel.timetacker.activity.ui.theme.Month
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.util.*
@@ -76,13 +77,22 @@ fun MainScreen() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Button(
-            onClick = {
-                context.startActivity(Intent(context, Daily::class.java))
-            },
-            modifier = Modifier.fillMaxWidth(0.5f) // Button width is 50% of screen width
-        ) {
-            Text("Daily")
+        Column {
+            Button(
+                onClick = {
+                    context.startActivity(Intent(context, Daily::class.java))
+                }
+            ) {
+                Text("Daily")
+            }
+
+            Button(onClick = {
+                context.startActivity(Intent(context, Month::class.java))
+
+            })
+            {
+                Text("Month")
+            }
         }
     }
 }

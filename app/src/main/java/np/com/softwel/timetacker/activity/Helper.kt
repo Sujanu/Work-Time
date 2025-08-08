@@ -92,48 +92,82 @@ fun CustomDropdown(
 
 @SuppressLint("DefaultLocale")
 
-fun calculateWorkingHours(clockIn: String, clockOut: String): Pair<String, String> {
-    if (clockIn.isEmpty() || clockOut.isEmpty()) return Pair("", "")
+fun calculateWorkingHours(clockIn: String, clockOut: String): Quadruple<String, String, String, String> {
+    if (clockIn.isEmpty() || clockOut.isEmpty()) return Quadruple("", "", "", "")
 
     val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
 
     return try {
         val inTime = sdf.parse(clockIn)
         val outTime = sdf.parse(clockOut)
+        val fixedStart = sdf.parse("10:00 AM")
+        val fixedEnd = sdf.parse("05:30 PM")
 
-        if (inTime == null || outTime == null) return Pair("", "")
-
-        var diff = outTime.time - inTime.time
-        if (diff < 0) {
-            // If clockOut before clockIn, add 24 hours
-            diff += 24 * 60 * 60 * 1000
+        if (inTime == null || outTime == null || fixedStart == null || fixedEnd == null) {
+            return Quadruple("", "", "", "")
         }
+
+        // Calculate actual worked time
+        var diff = outTime.time - inTime.time
+        if (diff < 0) diff += 24 * 60 * 60 * 1000 // Handle midnight crossing
 
         val workingHours = diff / (1000 * 60 * 60)
         val workingMinutes = (diff / (1000 * 60)) % 60
-
         val workingTimeFormatted = String.format("%02d:%02d", workingHours, workingMinutes)
 
-        // Target working time in milliseconds (7 hrs 30 mins)
-        val targetMillis = (7 * 60 + 30) * 60 * 1000L
+        // Check lateness
+        var lateBy = ""
+        var requiredEndTime = fixedEnd.time
+        if (inTime.after(fixedStart)) {
+            val lateMillis = inTime.time - fixedStart.time
+            val h = lateMillis / (1000 * 60 * 60)
+            val m = (lateMillis / (1000 * 60)) % 60
+            lateBy = "Late by %02d:%02d".format(h, m)
 
-        val diffFromTarget = diff - targetMillis
+            // Push required clock-out time forward by the lateness duration
+            requiredEndTime += lateMillis
+        }
 
-        val status = if (diffFromTarget >= 0) {
-            // Overtime by diffFromTarget
-            val h = diffFromTarget / (1000 * 60 * 60)
-            val m = (diffFromTarget / (1000 * 60)) % 60
-            "Overtime by %02d:%02d".format(h, m)
-        } else {
-            // Early by absolute diffFromTarget
-            val earlyMillis = -diffFromTarget
+        // Check early leave (compared to adjusted requiredEndTime)
+        val earlyBy = if (outTime.time < requiredEndTime) {
+            val earlyMillis = requiredEndTime - outTime.time
             val h = earlyMillis / (1000 * 60 * 60)
             val m = (earlyMillis / (1000 * 60)) % 60
             "Early by %02d:%02d".format(h, m)
+        } else {
+            ""
         }
 
-        Pair(workingTimeFormatted, status)
+        // Required work duration = 7.5 hours in milliseconds
+        val requiredWorkMillis = (7 * 60 + 30) * 60 * 1000L
+
+        val diffWork = diff - requiredWorkMillis
+        val deficitExcess = when {
+            diffWork < 0 -> {
+                val deficitMillis = -diffWork
+                val h = deficitMillis / (1000 * 60 * 60)
+                val m = (deficitMillis / (1000 * 60)) % 60
+                "Deficit by %02d:%02d".format(h, m)
+            }
+            diffWork > 0 -> {
+                val excessMillis = diffWork
+                val h = excessMillis / (1000 * 60 * 60)
+                val m = (excessMillis / (1000 * 60)) % 60
+                "Excess by %02d:%02d".format(h, m)
+            }
+            else -> ""
+        }
+
+        Quadruple(workingTimeFormatted, lateBy, earlyBy, deficitExcess)
     } catch (e: Exception) {
-        Pair("", "")
+        Quadruple("", "", "", "")
     }
 }
+
+// Define a Quadruple class since Kotlin doesn't have built-in one:
+data class Quadruple<A, B, C, D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D
+)
