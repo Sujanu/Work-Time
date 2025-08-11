@@ -384,12 +384,8 @@ fun Time(db: WorkingHour) {
                     )
 
                     if (result) {
-                        Toast.makeText(
-                            context,
-                            "Saved successfully!",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        Toast.makeText(context, "Saved successfully!", Toast.LENGTH_SHORT).show()
+                        context.startActivity(Intent(context, MainActivity::class.java))
                     } else {
                         Toast.makeText(
                             context,

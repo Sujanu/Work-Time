@@ -8,7 +8,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +18,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
@@ -48,8 +53,12 @@ import androidx.compose.ui.unit.dp
 import np.com.softwel.timetacker.ui.theme.TimeTackerTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import np.com.softwel.timetacker.activity.ui.theme.Month
+import np.com.softwel.timetacker.database.WorkingHour
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.util.*
@@ -57,41 +66,106 @@ import java.util.*
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val dbHelper = WorkingHour(this)
+        enableEdgeToEdge()
+
         enableEdgeToEdge()
         setContent {
             TimeTackerTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    MainScreen()
+                    MainScreen(db = dbHelper)
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun MainScreen() {
+fun MainScreen(db: WorkingHour) {
     val context = LocalContext.current
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column {
-            Button(
-                onClick = {
-                    context.startActivity(Intent(context, Daily::class.java))
-                }
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top, // top align
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Station List
+            AllStationsListScreen(db)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Daily")
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, Daily::class.java))
+                    }
+                ) {
+                    Text("Daily")
+                }
+
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, Month::class.java))
+                    }
+                ) {
+                    Text("Month")
+                }
             }
+        }
+    }
+}
 
-            Button(onClick = {
-                context.startActivity(Intent(context, Month::class.java))
+@Composable
+fun AllStationsListScreen(db: WorkingHour) {
+    val wHour = remember { db.getAll() }
+    val context = LocalContext.current
 
-            })
-            {
-                Text("Month")
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .fillMaxWidth()
+    ) {
+        if (wHour.isEmpty()) {
+            Text(
+                text = "No Charging Stations Available",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            )
+        } else {
+            wHour.forEach { whour ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Clock In: ${whour.clockIn}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 20.sp
+                        )
+                    }
+                }
             }
         }
     }

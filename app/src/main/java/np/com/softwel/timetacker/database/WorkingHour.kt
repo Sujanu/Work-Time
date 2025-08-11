@@ -58,6 +58,31 @@ class WorkingHour(context: Context) : SQLiteOpenHelper(context, DATABASENAME, nu
 
 
 
+    fun getAll(): List<WorkingHr> {
+        val wHourList = mutableListOf<WorkingHr>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $WORKING", null)
+
+        if (cursor.moveToFirst()) {
+            do {
+
+                val station = WorkingHr(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    workHour = cursor.getString(cursor.getColumnIndexOrThrow("workHour")),
+                    day = cursor.getString(cursor.getColumnIndexOrThrow("day")),
+                    date = cursor.getString(cursor.getColumnIndexOrThrow("date")),
+                    clockIn = cursor.getString(cursor.getColumnIndexOrThrow("clockIn")),
+                    clockOut = cursor.getString(cursor.getColumnIndexOrThrow("clockOut"))
+                )
+                wHourList.add(station)
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+        return wHourList
+    }
+
 
 
 
