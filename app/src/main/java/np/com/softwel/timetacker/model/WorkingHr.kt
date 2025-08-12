@@ -6,5 +6,6 @@ data class WorkingHr(
     val day : String,
     val date : String,
     val clockIn : String,
-    val clockOut : String
+    val clockOut : String,
+    val expectedTime : String
 )

@@ -24,6 +24,7 @@ class WorkingHour(context: Context) : SQLiteOpenHelper(context, DATABASENAME, nu
                     "date TEXT NOT NULL,"+
                     "workHour TEXT NOT NULL,"+
                     "clockIn TEXT NOT NULL,"+
+                    "expectedTime TEXT NOT NULL,"+
                     "clockOut TEXT NOT NULL)"
         )
 
@@ -72,7 +73,8 @@ class WorkingHour(context: Context) : SQLiteOpenHelper(context, DATABASENAME, nu
                     day = cursor.getString(cursor.getColumnIndexOrThrow("day")),
                     date = cursor.getString(cursor.getColumnIndexOrThrow("date")),
                     clockIn = cursor.getString(cursor.getColumnIndexOrThrow("clockIn")),
-                    clockOut = cursor.getString(cursor.getColumnIndexOrThrow("clockOut"))
+                    clockOut = cursor.getString(cursor.getColumnIndexOrThrow("clockOut")),
+                    expectedTime = cursor.getString(cursor.getColumnIndexOrThrow("expectedTime"))
                 )
                 wHourList.add(station)
             } while (cursor.moveToNext())

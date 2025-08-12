@@ -31,9 +31,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import np.com.softwel.timetacker.ui.theme.TimeTackerTheme
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import np.com.softwel.timetacker.activity.ui.theme.Month
 import np.com.softwel.timetacker.database.WorkingHour
+import np.com.softwel.timetacker.model.ChatRequest
+import np.com.softwel.timetacker.model.ChatResponse
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
 
 
 class MainActivity : ComponentActivity() {
@@ -108,7 +115,7 @@ fun AllStationsListScreen(db: WorkingHour) {
     ) {
         if (wHour.isEmpty()) {
             Text(
-                text = "No Charging Stations Available",
+                text = "Not Available",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
@@ -134,6 +141,18 @@ fun AllStationsListScreen(db: WorkingHour) {
                     ) {
                         Text(
                             "Clock In: ${whour.clockIn}",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontSize = 20.sp
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Expected Clock Out: ${whour.expectedTime}",
                             style = MaterialTheme.typography.titleMedium,
                             fontSize = 20.sp
                         )

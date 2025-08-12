@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -88,8 +87,6 @@ fun Time(db: WorkingHour) {
     val dayOptions = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
     val dateOptions = (1..31).map { it.toString() }
 
-
-
     val calendar = Calendar.getInstance()
     val hour = calendar.get(Calendar.HOUR_OF_DAY)
     val minute = calendar.get(Calendar.MINUTE)
@@ -97,6 +94,29 @@ fun Time(db: WorkingHour) {
     var workingHours by remember { mutableStateOf("") }
 
     var workingStatus by remember { mutableStateOf("") }
+
+    // Declare expectedClockOut at the composable level so it's accessible
+    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    val inTime = clockIn.takeIf { it.isNotEmpty() }?.let { sdf.parse(it) }
+    val expectedClockOut = if (inTime != null) {
+        val expectedTimeMs = inTime.time + (7 * 60 + 30) * 60 * 1000L // 7.5 hours in milliseconds
+        sdf.format(expectedTimeMs)
+    } else {
+        "--:-- --"
+    }
+
+// Calculate working hours
+    val (workingTime, lateBy, earlyBy, deficitExcess) = calculateWorkingHours(clockIn, clockOut)
+
+// For total minutes comparison
+    val parts = workingTime.split(":")
+    val totalMinutesWorked =
+        if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
+    val requiredMinutes = 7 * 60 + 30
+
+// Store workingHour (if needed)
+    workingHour = workingTime
+
 
     LaunchedEffect(clockIn, clockOut) {
         val (hours, status) = calculateWorkingHours(clockIn, clockOut)
@@ -199,8 +219,6 @@ fun Time(db: WorkingHour) {
 
                             Spacer(modifier = Modifier.padding(top = 6.dp))
 
-
-
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween, // Put texts at opposite ends
@@ -238,11 +256,19 @@ fun Time(db: WorkingHour) {
                             .padding(16.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                    ) {
-                        val (workingTime, lateBy, earlyBy, deficitExcess) = calculateWorkingHours(
-                            clockIn,
-                            clockOut
-                        )
+                    )
+                    {
+                        val (workingTime, lateBy, earlyBy, deficitExcess) = calculateWorkingHours(clockIn, clockOut)
+
+                        // Parse clockIn to calculate expected clock-out = clockIn + 7h30m
+                        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                        val inTime = clockIn.takeIf { it.isNotEmpty() }?.let { sdf.parse(it) }
+                        val expectedClockOut = if (inTime != null) {
+                            val expectedTimeMs = inTime.time + (7 * 60 + 30) * 60 * 1000L // +7.5 hours
+                            sdf.format(expectedTimeMs)
+                        } else {
+                            "--:-- --"
+                        }
 
                         val parts = workingTime.split(":")
                         val totalMinutesWorked =
@@ -253,7 +279,6 @@ fun Time(db: WorkingHour) {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-
                             Text(
                                 text = "Working Time",
                                 style = MaterialTheme.typography.titleMedium,
@@ -269,10 +294,9 @@ fun Time(db: WorkingHour) {
                             Divider(modifier = Modifier.padding(vertical = 8.dp))
 
                             Column {
-
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween, // Put texts at opposite ends
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -280,7 +304,6 @@ fun Time(db: WorkingHour) {
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-
                                     Text(
                                         text = workingTime.ifEmpty { "--:--" },
                                         style = MaterialTheme.typography.bodyLarge,
@@ -290,7 +313,7 @@ fun Time(db: WorkingHour) {
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween, // Put texts at opposite ends
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -298,51 +321,64 @@ fun Time(db: WorkingHour) {
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Text(text = clockIn )
-
+                                    Text(text = clockIn.ifEmpty { "--:--" })
                                 }
-
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween, // Put texts at opposite ends
+                                    horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
-                                )
-                                {
-
+                                ) {
                                     Text(
-                                        text = "Leave: ",
+                                        text = "Leave:",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
-
-                                    Text(
-                                        text = clockOut
-                                    )
-
+                                    Text(text = clockOut.ifEmpty { "--:--" })
                                 }
-                                    if (totalMinutesWorked == requiredMinutes) {
+
+                                // 🔹 Display Expected Clock-Out
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Expected Out:",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = expectedClockOut,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                // Status: Complete, Excess, or Deficit
+                                when {
+                                    totalMinutesWorked == requiredMinutes -> {
                                         Text(
                                             text = "Complete Shift",
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
-                                    } else {
-                                        if (deficitExcess.isNotEmpty()) {
-                                            Text(
-                                                text = deficitExcess,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = if (deficitExcess.startsWith("Excess")) Color(
-                                                    0xFF388E3C
-                                                ) else Color(0xFFD32F2F),
-                                            )
-                                        }
                                     }
-                                workingHour = workingTime
-
+                                    deficitExcess.isNotEmpty() -> {
+                                        Text(
+                                            text = deficitExcess,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (deficitExcess.startsWith("Excess")) Color(0xFF388E3C) // Green
+                                            else Color(0xFFD32F2F), // Red
+                                        )
+                                    }
+                                }
                             }
+
+                            // Optional: You can store workingHour if needed
+                            workingHour = workingTime
                         }
                     }
                 }
@@ -362,7 +398,9 @@ fun Time(db: WorkingHour) {
                         date = selectedDate.toString(),
                         clockIn = clockIn.toString(),
                         clockOut = clockOut.toString(),
-                        workHour = workingHour.toString()
+                        workHour = workingHour.toString(),
+                        expectedTime = expectedClockOut
+
                     )
 
                     val contentValues = ContentValues().apply {
@@ -372,6 +410,7 @@ fun Time(db: WorkingHour) {
                         put("clockIn", data.clockIn)
                         put("clockOut", data.clockOut)
                         put("workHour", data.workHour)
+                        put("expectedTime", data.expectedTime)
 
                     }
 

@@ -1,31 +1,22 @@
 package np.com.softwel.timetacker.activity
 
 import android.annotation.SuppressLint
-import android.app.TimePickerDialog
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.tooling.preview.Preview
 import np.com.softwel.timetacker.activity.ui.theme.TimeTackerTheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 
 class Helper : ComponentActivity() {
@@ -114,6 +105,11 @@ fun calculateWorkingHours(clockIn: String, clockOut: String): Quadruple<String, 
         val workingHours = diff / (1000 * 60 * 60)
         val workingMinutes = (diff / (1000 * 60)) % 60
         val workingTimeFormatted = String.format("%02d:%02d", workingHours, workingMinutes)
+
+        // --- NEW: Expected clock-out time = clock-in + 7.5 hours ---
+        val requiredWorkDurationMillis = 7 * 60 * 60 * 1000 + 30 * 60 * 1000 // 7.5 hrs in ms
+        val expectedClockOutTime = inTime.time + requiredWorkDurationMillis
+        val expectedClockOutFormatted = sdf.format(expectedClockOutTime)
 
         // Check lateness
         var lateBy = ""
