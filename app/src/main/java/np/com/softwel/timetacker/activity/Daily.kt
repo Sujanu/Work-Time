@@ -22,8 +22,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -75,8 +75,6 @@ class Daily : ComponentActivity() {
 fun Time(db: WorkingHour) {
     val context = LocalContext.current
 
-
-    var month by remember { mutableStateOf("") }
     var clockIn by remember { mutableStateOf("") }
     var clockOut by remember { mutableStateOf("") }
     var workingHour by remember { mutableStateOf("") }
@@ -87,9 +85,6 @@ fun Time(db: WorkingHour) {
     val dayOptions = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
     val dateOptions = (1..31).map { it.toString() }
 
-    val calendar = Calendar.getInstance()
-    val hour = calendar.get(Calendar.HOUR_OF_DAY)
-    val minute = calendar.get(Calendar.MINUTE)
 
     var workingHours by remember { mutableStateOf("") }
 
@@ -106,7 +101,7 @@ fun Time(db: WorkingHour) {
     }
 
 // Calculate working hours
-    val (workingTime, lateBy, earlyBy, deficitExcess) = calculateWorkingHours(clockIn, clockOut)
+    val (workingTime, deficitExcess) = calculateWorkingHours(clockIn, clockOut)
 
 // For total minutes comparison
     val parts = workingTime.split(":")
@@ -130,7 +125,7 @@ fun Time(db: WorkingHour) {
             TopAppBar(
                 title = { Text("WORK COUNTER") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF3F51B5),
+                    containerColor = Color(0xFF03A9F4),
                     titleContentColor = Color.White
                 )
             )
@@ -147,13 +142,10 @@ fun Time(db: WorkingHour) {
             Box(
                 modifier = Modifier.fillMaxSize(),
 
-
                 ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-
-
 
                     Spacer(modifier = Modifier.padding(top = 12.dp))
 
@@ -258,22 +250,6 @@ fun Time(db: WorkingHour) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                     )
                     {
-                        val (workingTime, lateBy, earlyBy, deficitExcess) = calculateWorkingHours(clockIn, clockOut)
-
-                        // Parse clockIn to calculate expected clock-out = clockIn + 7h30m
-                        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-                        val inTime = clockIn.takeIf { it.isNotEmpty() }?.let { sdf.parse(it) }
-                        val expectedClockOut = if (inTime != null) {
-                            val expectedTimeMs = inTime.time + (7 * 60 + 30) * 60 * 1000L // +7.5 hours
-                            sdf.format(expectedTimeMs)
-                        } else {
-                            "--:-- --"
-                        }
-
-                        val parts = workingTime.split(":")
-                        val totalMinutesWorked =
-                            if (parts.size == 2) parts[0].toInt() * 60 + parts[1].toInt() else 0
-                        val requiredMinutes = 7 * 60 + 30
 
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -291,7 +267,7 @@ fun Time(db: WorkingHour) {
                                 color = MaterialTheme.colorScheme.primary
                             )
 
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                             Column {
                                 Row(
@@ -396,9 +372,9 @@ fun Time(db: WorkingHour) {
                         id = 0,
                         day = selectedDay.toString(),
                         date = selectedDate.toString(),
-                        clockIn = clockIn.toString(),
-                        clockOut = clockOut.toString(),
-                        workHour = workingHour.toString(),
+                        clockIn = clockIn,
+                        clockOut = clockOut,
+                        workHour = workingHour,
                         expectedTime = expectedClockOut
 
                     )
