@@ -94,7 +94,7 @@ fun MainScreen(db: WorkingHour) {
                         contentColor = Color.Black           // Text/icon color
                     ),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
-                 ) {
+                ) {
                     Text(
                         text = "Daily",
                         style = MaterialTheme.typography.titleMedium,
@@ -197,16 +197,20 @@ fun AllStationsListScreen(db: WorkingHour) {
                             Icon(
                                 imageVector = Icons.Default.Schedule,
                                 contentDescription = "Expected Clock Out",
-                                tint = Color(0xFFF57C00),
+                                tint = Color(0xFFEF8263),
                                 modifier = Modifier.size(24.dp)
                             )
+
                             Spacer(modifier = Modifier.width(8.dp))
+
                             Text(
                                 text = "Expected Clock Out:",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.ExtraBold
                             )
+
                             Spacer(modifier = Modifier.width(4.dp))
+
                             Text(
                                 text = whour.expectedTime,
                                 style = MaterialTheme.typography.bodyLarge,
@@ -214,6 +218,39 @@ fun AllStationsListScreen(db: WorkingHour) {
                                 color = Color(0xFF212121)
                             )
                         }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        )
+
+                        {
+                            Icon(
+                                imageVector = Icons.Default.Schedule,
+                                contentDescription = "Expected Clock Out",
+                                tint = Color(0xFFCB1500),
+                                modifier = Modifier.size(24.dp)
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                text = "Clock Out:",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = whour.clockOut,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF212121)
+                            )
+                        }
+
                     }
                 }
             }

@@ -360,12 +360,8 @@ fun Time(db: WorkingHour) {
                 }
             }
 
-
-            Button(onClick = {
-                context.startActivity(Intent(context, Daily::class.java))
-            }) { }
-
             /////////// SAVE BUTTON
+
             Column {
                 Button(onClick = {
                     val data = WorkingHr(
@@ -410,7 +406,14 @@ fun Time(db: WorkingHour) {
                             .show()
                     }
 
-                }) {
+                },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent, // Transparent background
+                        contentColor = Color.Black           // Text/icon color
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(0.dp)
+                )
+                {
                     Text(text = "SAVE")
                 }
             }    //////
